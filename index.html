@@ -195,6 +195,52 @@ main{flex:1;padding:0 1.1rem}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media(min-width:481px){body{background-color:var(--paper2)}#app{box-shadow:0 0 40px rgba(43,35,32,.12)}}
+
+/* --- ECRÃ DE BLOQUEIO (trial/licença) --- */
+#lock-screen{position:fixed;inset:0;background:var(--paper);z-index:99999;display:none;overflow-y:auto;padding:1.4rem 1.2rem 2.5rem}
+#lock-screen.show{display:block}
+.lock-wrap{max-width:420px;margin:0 auto}
+.lock-title{font-family:Georgia,'Noto Serif',serif;font-weight:700;font-size:1.4rem;margin-bottom:.3rem}
+.lock-sub{font-size:.82rem;color:var(--ink2);line-height:1.55;margin-bottom:1.3rem}
+.lock-card{background:var(--card);border-radius:12px;padding:1rem 1.1rem;box-shadow:var(--shadow);margin-bottom:1rem}
+.lock-card h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:.5rem}
+.device-id{
+  font-family:'SF Mono',Menlo,Consolas,monospace;font-size:1.3rem;font-weight:700;letter-spacing:.08em;
+  background:var(--paper2);border:1.5px dashed var(--line);border-radius:8px;padding:.6rem;text-align:center;
+}
+.lock-copy{width:100%;margin-top:.55rem;background:none;border:1.5px solid var(--line);border-radius:7px;
+  padding:.45rem 0;font-size:.74rem;color:var(--ink2);cursor:pointer;font-family:'-apple-system',sans-serif}
+.pay-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;font-size:.85rem;border-bottom:1px solid var(--line)}
+.pay-row:last-child{border-bottom:none}
+.pay-row b{font-family:'SF Mono',Menlo,Consolas,monospace}
+.wa-btn{
+  display:block;width:100%;text-align:center;background:#25D366;color:#fff;text-decoration:none;
+  border-radius:8px;padding:.7rem 0;font-weight:700;font-size:.85rem;margin-top:.2rem;
+}
+#lock-chave{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:.65rem .8rem;font-size:1rem;
+  font-family:'SF Mono',Menlo,Consolas,monospace;text-transform:uppercase;text-align:center;letter-spacing:.06em;color:var(--ink)}
+#lock-chave:focus{outline:none;border-color:var(--amberd)}
+.lock-erro{color:var(--rust);font-size:.76rem;text-align:center;margin-top:.5rem;display:none}
+.lock-erro.show{display:block}
+.trial-badge{
+  background:var(--amberp);color:var(--amberd);font-size:.68rem;font-weight:600;text-align:center;
+  padding:.4rem;border-radius:7px;margin:0 1.1rem .6rem;
+}
+.trial-badge.urgente{background:var(--rustp);color:var(--rustd)}
+
+/* --- Painel de relatórios (Histórico) --- */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.9rem}
+.stat-tile{background:var(--card);border-radius:10px;padding:.75rem .85rem;box-shadow:var(--shadow)}
+.stat-tile .st-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);font-weight:700}
+.stat-tile .st-val{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:1.05rem;margin-top:.25rem;color:var(--ink)}
+.stat-tile .st-sub{font-size:.65rem;color:var(--ink3);margin-top:.1rem}
+.stat-tile.destaque .st-val{color:var(--green)}
+.stat-tile.alerta .st-val{color:var(--rust)}
+.extra-card{background:var(--card);border-radius:10px;padding:.85rem .95rem;box-shadow:var(--shadow);margin-bottom:1rem}
+.extra-card .ec-row{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;padding:.32rem 0;border-bottom:1px solid var(--line)}
+.extra-card .ec-row:last-child{border-bottom:none}
+.extra-card .ec-row span:last-child{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700}
+.section-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);margin:0 0 .5rem .1rem}
 </style>
 </head>
 <body>
@@ -207,6 +253,8 @@ main{flex:1;padding:0 1.1rem}
     </div>
   </div>
 
+  <div class="trial-badge" id="trial-badge" style="display:none"></div>
+
   <main>
     <section id="view-fiado" class="view active">
       <div class="summary-bar">
@@ -218,10 +266,34 @@ main{flex:1;padding:0 1.1rem}
     </section>
 
     <section id="view-historico" class="view">
-      <div class="summary-bar">
-        <span>Recebido hoje</span>
-        <span class="summary-total green" id="hist-hoje-total">MT 0,00</span>
+      <div class="section-label">Resumo de vendas</div>
+      <div class="stats-grid">
+        <div class="stat-tile destaque">
+          <div class="st-label">Hoje</div>
+          <div class="st-val" id="rel-hoje-total">MT 0,00</div>
+          <div class="st-sub" id="rel-hoje-qtd">0 vendas</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">Esta semana</div>
+          <div class="st-val" id="rel-semana-total">MT 0,00</div>
+          <div class="st-sub" id="rel-semana-qtd">0 vendas</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">Este mês</div>
+          <div class="st-val" id="rel-mes-total">MT 0,00</div>
+          <div class="st-sub" id="rel-mes-qtd">0 vendas</div>
+        </div>
+        <div class="stat-tile alerta">
+          <div class="st-label">Em dívida agora</div>
+          <div class="st-val" id="rel-divida-total">MT 0,00</div>
+          <div class="st-sub" id="rel-divida-qtd">0 contas abertas</div>
+        </div>
       </div>
+      <div class="extra-card">
+        <div class="ec-row"><span>Ticket médio (mês)</span><span id="rel-ticket-medio">MT 0,00</span></div>
+        <div class="ec-row"><span>Mais vendido (mês)</span><span id="rel-top-item">—</span></div>
+      </div>
+      <div class="section-label">Pagamentos registados</div>
       <div id="hist-list" class="tab-list"></div>
       <div class="empty" id="hist-empty">Ainda não há pagamentos registados.</div>
     </section>
@@ -297,10 +369,51 @@ main{flex:1;padding:0 1.1rem}
 
 <div id="toast"></div>
 
+<div id="lock-screen">
+  <div class="lock-wrap">
+    <div class="lock-title" id="lock-title">Período de teste terminado</div>
+    <div class="lock-sub" id="lock-sub">Os teus dados continuam guardados no telemóvel — só precisas de activar para continuares a usar a app.</div>
+
+    <div class="lock-card">
+      <h4>O teu código de aparelho</h4>
+      <div class="device-id" id="lock-device-id">------</div>
+      <button class="lock-copy" onclick="copiarDeviceId()">📋 Copiar código</button>
+    </div>
+
+    <div class="lock-card">
+      <h4>Como activar</h4>
+      <div class="pay-row"><span>M-Pesa</span><b id="lock-mpesa">—</b></div>
+      <div class="pay-row"><span>e-Mola</span><b id="lock-emola">—</b></div>
+      <div class="pay-row"><span>Valor</span><b id="lock-preco">—</b></div>
+      <a href="#" id="lock-wa" class="wa-btn" target="_blank">💬 Enviar comprovativo por WhatsApp</a>
+    </div>
+
+    <div class="lock-card">
+      <h4>Já tenho uma chave</h4>
+      <input id="lock-chave" type="text" placeholder="XXXXX-XXXXX" maxlength="11">
+      <button class="btn-primary" style="width:100%;margin-top:.6rem" onclick="activarChave()">Activar</button>
+      <div class="lock-erro" id="lock-erro">Chave inválida para este aparelho. Confirma que copiaste certo.</div>
+    </div>
+  </div>
+</div>
+
 <script>
 // =====================================================================
 // ESTADO E PERSISTÊNCIA (localStorage — os dados ficam só neste telefone/navegador)
 // =====================================================================
+// =====================================================================
+// LICENCIAMENTO — AJUSTA ESTES DADOS ANTES DE DISTRIBUIRES A APP
+// =====================================================================
+const LICENCA_CONFIG = {
+  diasTrial: 45,           // dias de teste grátis
+  diasValidadeChave: 365,  // validade de cada chave (renovação anual)
+  precoTexto: '200 MT/ano', // ex: '1.000 MT' — AJUSTA AQUI
+  numeroMpesa: '85 038 4614',  // ex: '84 000 0000' — AJUSTA AQUI
+  numeroEmola: '86 925 6932',  // ex: '86 000 0000' — AJUSTA AQUI
+  whatsapp: '258850384614',            // ex: '258840000000' (com código do país, sem +, sem espaços) — AJUSTA AQUI
+  segredo: 'Rbenny1788', // AJUSTA AQUI — usado para gerar/validar chaves
+};
+
 const LS_MENU='fiado_menu', LS_ABERTAS='fiado_abertas', LS_HIST='fiado_historico', LS_NOME='fiado_nome_negocio';
 
 function load(key, fallback){
@@ -353,6 +466,7 @@ function mudarView(v){
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(el=>el.classList.toggle('active', el.dataset.view===v));
   document.getElementById('fab-novo').classList.toggle('hide-fab', v!=='fiado');
+  if(v==='historico') renderHistorico();
 }
 
 // =====================================================================
@@ -419,15 +533,42 @@ function escapeHtml(s){
 // =====================================================================
 // RENDER: HISTÓRICO
 // =====================================================================
+function inicioDia(ts){ const d=new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
+function inicioSemana(ts){ const d=new Date(ts); const diaSemana=(d.getDay()+6)%7; /* 0=Seg...6=Dom */
+  d.setDate(d.getDate()-diaSemana); d.setHours(0,0,0,0); return d.getTime(); }
+function inicioMes(ts){ const d=new Date(ts); d.setDate(1); d.setHours(0,0,0,0); return d.getTime(); }
+
 function renderHistorico(){
   const lista = document.getElementById('hist-list');
   const vazio = document.getElementById('hist-empty');
   lista.innerHTML='';
   if(HIST.length===0){ vazio.classList.remove('hide'); } else { vazio.classList.add('hide'); }
 
-  const hoje = new Date().toDateString();
-  const totalHoje = HIST.filter(h=>new Date(h.pagoEm).toDateString()===hoje).reduce((s,h)=>s+h.total,0);
-  document.getElementById('hist-hoje-total').textContent = fmt(totalHoje);
+  const agora = Date.now();
+  const iDia = inicioDia(agora), iSemana = inicioSemana(agora), iMes = inicioMes(agora);
+  const vHoje = HIST.filter(h=>h.pagoEm>=iDia);
+  const vSemana = HIST.filter(h=>h.pagoEm>=iSemana);
+  const vMes = HIST.filter(h=>h.pagoEm>=iMes);
+  const somaTotal = arr=>arr.reduce((s,h)=>s+h.total,0);
+
+  document.getElementById('rel-hoje-total').textContent = fmt(somaTotal(vHoje));
+  document.getElementById('rel-hoje-qtd').textContent = vHoje.length+' venda'+(vHoje.length===1?'':'s');
+  document.getElementById('rel-semana-total').textContent = fmt(somaTotal(vSemana));
+  document.getElementById('rel-semana-qtd').textContent = vSemana.length+' venda'+(vSemana.length===1?'':'s');
+  document.getElementById('rel-mes-total').textContent = fmt(somaTotal(vMes));
+  document.getElementById('rel-mes-qtd').textContent = vMes.length+' venda'+(vMes.length===1?'':'s');
+
+  const totalDivida = ABERTAS.reduce((s,c)=>s+totalConta(c.itens),0);
+  document.getElementById('rel-divida-total').textContent = fmt(totalDivida);
+  document.getElementById('rel-divida-qtd').textContent = ABERTAS.length+' conta'+(ABERTAS.length===1?'':'s')+' aberta'+(ABERTAS.length===1?'':'s');
+
+  const ticketMedio = vMes.length ? somaTotal(vMes)/vMes.length : 0;
+  document.getElementById('rel-ticket-medio').textContent = fmt(ticketMedio);
+
+  const contagemItens = {};
+  vMes.forEach(h=>h.itens.forEach(i=>{ contagemItens[i.nome] = (contagemItens[i.nome]||0) + i.qtd; }));
+  const topItem = Object.entries(contagemItens).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('rel-top-item').textContent = topItem ? `${topItem[0]} (${topItem[1]}×)` : '—';
 
   HIST.slice().sort((a,b)=>b.pagoEm-a.pagoEm).forEach(h=>{
     const resumoItens = h.itens.map(i=>`<b>${i.qtd}×</b> ${i.nome}`).join(' · ');
@@ -609,9 +750,125 @@ function apagarItemMenu(id){
 }
 
 // =====================================================================
+// LICENCIAMENTO — geração/validação de chaves e ecrã de bloqueio
+// =====================================================================
+const LS_INSTALADO='licenca_instalado_em', LS_DEVICE='licenca_device_id',
+      LS_PERIODO='licenca_periodo', LS_ATIVADA='licenca_activada_em';
+
+const ALFABETO_CHAVE='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem 0/O e 1/I, para não confundir
+
+function gerarDeviceId(){
+  let s='';
+  for(let i=0;i<6;i++) s+=ALFABETO_CHAVE[Math.floor(Math.random()*ALFABETO_CHAVE.length)];
+  return s;
+}
+function fnv1a(str, seed){
+  let h = seed>>>0;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h>>>0;
+}
+function paraBase(n){
+  let s='';
+  for(let i=0;i<5;i++){ s = ALFABETO_CHAVE[n % ALFABETO_CHAVE.length] + s; n = Math.floor(n / ALFABETO_CHAVE.length); }
+  return s;
+}
+function gerarChave(deviceId, periodo){
+  const base = deviceId+'|'+periodo+'|'+LICENCA_CONFIG.segredo;
+  const h1 = fnv1a(base, 2166136261);
+  const h2 = fnv1a(base+'#', 84696351);
+  return paraBase(h1)+'-'+paraBase(h2);
+}
+function normalizarChave(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
+
+function obterEstadoLicenca(){
+  let instaladoEm = load(LS_INSTALADO, null);
+  if(!instaladoEm){ instaladoEm = Date.now(); save(LS_INSTALADO, instaladoEm); }
+  let deviceId = load(LS_DEVICE, null);
+  if(!deviceId){ deviceId = gerarDeviceId(); save(LS_DEVICE, deviceId); }
+  const periodo = load(LS_PERIODO, 0);
+  const activadaEm = load(LS_ATIVADA, null);
+
+  const diasInstalado = (Date.now()-instaladoEm)/86400000;
+  const emTrial = periodo===0 && diasInstalado <= LICENCA_CONFIG.diasTrial;
+  const diasTrialRestantes = Math.ceil(LICENCA_CONFIG.diasTrial - diasInstalado);
+  const licencaValida = periodo>0 && activadaEm && (Date.now()-activadaEm) <= LICENCA_CONFIG.diasValidadeChave*86400000;
+  const diasLicencaRestantes = licencaValida ? Math.ceil(LICENCA_CONFIG.diasValidadeChave - (Date.now()-activadaEm)/86400000) : 0;
+
+  return { instaladoEm, deviceId, periodo, activadaEm, emTrial, diasTrialRestantes, licencaValida, diasLicencaRestantes,
+           bloqueado: !emTrial && !licencaValida };
+}
+
+function verificarLicenca(){
+  const st = obterEstadoLicenca();
+  const badge = document.getElementById('trial-badge');
+
+  if(st.bloqueado){
+    document.getElementById('lock-screen').classList.add('show');
+    document.getElementById('lock-title').textContent = st.periodo>0 ? 'A tua licença expirou' : 'Período de teste terminado';
+    document.getElementById('lock-sub').textContent = st.periodo>0
+      ? 'Já passou 1 ano desde a última activação. Renova para continuares a usar a app — os teus dados continuam todos guardados.'
+      : `Experimentaste a app durante ${LICENCA_CONFIG.diasTrial} dias. Para continuares a usar, activa com uma chave — os teus dados continuam todos guardados.`;
+    document.getElementById('lock-device-id').textContent = st.deviceId;
+    document.getElementById('lock-mpesa').textContent = LICENCA_CONFIG.numeroMpesa;
+    document.getElementById('lock-emola').textContent = LICENCA_CONFIG.numeroEmola;
+    document.getElementById('lock-preco').textContent = LICENCA_CONFIG.precoTexto;
+    const msgWa = encodeURIComponent(`Olá! Quero activar a app "A La Ruben". O meu código de aparelho é: ${st.deviceId}`);
+    document.getElementById('lock-wa').href = LICENCA_CONFIG.whatsapp ? `https://wa.me/${LICENCA_CONFIG.whatsapp}?text=${msgWa}` : '#';
+    badge.style.display='none';
+    return false;
+  }
+
+  document.getElementById('lock-screen').classList.remove('show');
+  if(st.emTrial){
+    badge.style.display='block';
+    badge.classList.toggle('urgente', st.diasTrialRestantes<=7);
+    badge.textContent = st.diasTrialRestantes<=0 ? 'Último dia de teste' : `Teste grátis — faltam ${st.diasTrialRestantes} dia(s)`;
+  } else if(st.licencaValida){
+    badge.style.display='block';
+    badge.classList.toggle('urgente', st.diasLicencaRestantes<=14);
+    badge.textContent = `Licença activa — renova em ${st.diasLicencaRestantes} dia(s)`;
+  }
+  return true;
+}
+
+function copiarDeviceId(){
+  const id = document.getElementById('lock-device-id').textContent;
+  if(navigator.clipboard){ navigator.clipboard.writeText(id).then(()=>toast('Código copiado')); }
+  else toast('Código: '+id);
+}
+
+function activarChave(){
+  const st = obterEstadoLicenca();
+  const digitada = normalizarChave(document.getElementById('lock-chave').value);
+  const erro = document.getElementById('lock-erro');
+  const proximoPeriodo = st.periodo + 1;
+
+  const chaveEsperadaProxima = normalizarChave(gerarChave(st.deviceId, proximoPeriodo));
+  const chaveEsperadaAtual = st.periodo>0 ? normalizarChave(gerarChave(st.deviceId, st.periodo)) : null;
+
+  if(digitada === chaveEsperadaProxima){
+    save(LS_PERIODO, proximoPeriodo);
+    save(LS_ATIVADA, Date.now());
+    erro.classList.remove('show');
+    document.getElementById('lock-chave').value='';
+    toast('Activado! Obrigado.');
+    verificarLicenca();
+  } else if(chaveEsperadaAtual && digitada === chaveEsperadaAtual){
+    save(LS_ATIVADA, Date.now());
+    erro.classList.remove('show');
+    document.getElementById('lock-chave').value='';
+    toast('Activado! Obrigado.');
+    verificarLicenca();
+  } else {
+    erro.classList.add('show');
+  }
+}
+
+// =====================================================================
 // INÍCIO
 // =====================================================================
 carregarNome();
+verificarLicenca();
 renderFiado();
 renderHistorico();
 renderCardapio();

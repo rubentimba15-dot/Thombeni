@@ -34,6 +34,7 @@ body{
 .topbar{padding:1.1rem 1.1rem .8rem;display:flex;flex-direction:column}
 .brand{display:flex;flex-direction:column;cursor:pointer}
 .brand-name{font-family:Georgia,'Noto Serif',serif;font-weight:700;font-size:1.55rem;color:var(--ink);line-height:1.1}
+.app-brand{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin-bottom:.25rem}
 .brand-tag{font-size:.68rem;color:var(--ink3);margin-top:.15rem;letter-spacing:.02em}
 
 /* --- Vistas --- */
@@ -69,7 +70,13 @@ main{flex:1;padding:0 1.1rem}
 .tc-quando{font-size:.66rem;color:var(--ink3);margin-top:.1rem}
 .tc-total{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:1.02rem;color:var(--rust);white-space:nowrap}
 .tab-card.paga .tc-total{color:var(--green)}
+.tc-hd-right{display:flex;align-items:center;gap:.5rem}
+.tc-share{background:var(--paper2);border:1px solid var(--line);border-radius:6px;width:28px;height:28px;
+  font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.tc-share:active{background:var(--amberp)}
 .tc-itens{font-size:.72rem;color:var(--ink2);margin-top:.5rem;line-height:1.55}
+.tc-lanc{font-size:.72rem;color:var(--ink2);padding:.12rem 0}
+.tc-lanc span{font-family:'SF Mono',Menlo,Consolas,monospace;color:var(--ink3);font-weight:600}
 .tc-itens b{color:var(--ink)}
 .tc-actions{display:flex;gap:.5rem;margin-top:.75rem}
 .tc-btn{flex:1;border:none;border-radius:7px;padding:.5rem 0;font-size:.76rem;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
@@ -247,8 +254,9 @@ main{flex:1;padding:0 1.1rem}
 <div id="app">
 
   <div class="topbar">
+    <div class="app-brand">A La Ruben</div>
     <div class="brand" onclick="editarNome()">
-      <div class="brand-name" id="brand-name">A La Ruben</div>
+      <div class="brand-name" id="brand-name">Toca para pôr o nome da tua barraca</div>
       <div class="brand-tag">caderneta de fiado &amp; vendas</div>
     </div>
   </div>
@@ -328,6 +336,7 @@ main{flex:1;padding:0 1.1rem}
       <button onclick="fecharModalConta()">✕</button>
     </div>
     <div class="modal-body">
+      <div id="novo-pedido-hint" class="itens-resumo" style="display:none;margin-bottom:.7rem;font-style:italic">🕐 A registar um novo pedido, com a hora de agora — os pedidos anteriores desta conta continuam guardados.</div>
       <div class="menu-pick-block">
         <h4>🍺 Bebidas</h4>
         <div id="pick-bebidas" class="pick-grid"></div>
@@ -438,6 +447,25 @@ if(!MENU){
 let ABERTAS = load(LS_ABERTAS, []);
 let HIST = load(LS_HIST, []);
 
+// Migração automática: contas guardadas antes desta versão tinham "itens" em vez
+// de "lancamentos" com hora. Convertemos para não perder nada já registado.
+let migrou = false;
+ABERTAS.forEach(c=>{
+  if(!c.lancamentos && c.itens){
+    c.lancamentos = c.itens.map(i=>({ ts:c.criadoEm||Date.now(), itemId:i.itemId, nome:i.nome, preco:i.preco, qtd:i.qtd }));
+    delete c.itens;
+    migrou = true;
+  }
+});
+HIST.forEach(h=>{
+  if(!h.lancamentos && h.itens){
+    h.lancamentos = h.itens.map(i=>({ ts:h.pagoEm||Date.now(), itemId:i.itemId, nome:i.nome, preco:i.preco, qtd:i.qtd }));
+    delete h.itens;
+    migrou = true;
+  }
+});
+if(migrou){ save(LS_ABERTAS, ABERTAS); save(LS_HIST, HIST); }
+
 // Conta em edição no modal (rascunho antes de "Guardar")
 let contaEditando = null; // { id (null se nova), cliente, itens:[{itemId,nome,preco,qtd}] }
 let catItemNovo = 'bebida';
@@ -451,6 +479,19 @@ function fmt(n){
 }
 function uid(){ return 'x'+Date.now()+Math.random().toString(36).slice(2,7); }
 function totalConta(itens){ return itens.reduce((s,i)=>s+i.preco*i.qtd,0); }
+function totalLancamentos(lancamentos){ return lancamentos.reduce((s,l)=>s+l.preco*l.qtd,0); }
+function agruparLancamentos(lancamentos){
+  const mapa = {};
+  lancamentos.forEach(l=>{
+    if(!mapa[l.itemId]) mapa[l.itemId] = { nome:l.nome, preco:l.preco, qtd:0 };
+    mapa[l.itemId].qtd += l.qtd;
+  });
+  return Object.values(mapa);
+}
+function horaCurta(ts){
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
@@ -478,7 +519,8 @@ function carregarNome(){
 }
 function editarNome(){
   const actual = document.getElementById('brand-name').textContent;
-  const novo = prompt('Nome do teu negócio:', actual);
+  const ehPlaceholder = actual === 'Toca para pôr o nome da tua barraca';
+  const novo = prompt('Nome da tua barraca/restaurante:', ehPlaceholder ? '' : actual);
   if(novo && novo.trim()){
     document.getElementById('brand-name').textContent = novo.trim();
     save(LS_NOME, novo.trim());
@@ -495,18 +537,22 @@ function renderFiado(){
   if(ABERTAS.length===0){ vazio.classList.remove('hide'); }
   else { vazio.classList.add('hide'); }
 
-  const totalGeral = ABERTAS.reduce((s,c)=>s+totalConta(c.itens),0);
+  const totalGeral = ABERTAS.reduce((s,c)=>s+totalLancamentos(c.lancamentos),0);
   document.getElementById('fiado-total').textContent = fmt(totalGeral);
 
   ABERTAS.slice().sort((a,b)=>b.criadoEm-a.criadoEm).forEach(conta=>{
-    const total = totalConta(conta.itens);
-    const resumoItens = conta.itens.map(i=>`<b>${i.qtd}×</b> ${i.nome}`).join(' · ') || '<i>sem itens</i>';
+    const total = totalLancamentos(conta.lancamentos);
+    const agrupado = agruparLancamentos(conta.lancamentos);
+    const resumoItens = agrupado.map(i=>`<b>${i.qtd}×</b> ${i.nome}`).join(' · ') || '<i>sem itens</i>';
     const div = document.createElement('div');
     div.className='tab-card';
     div.innerHTML = `
       <div class="tab-card-hd">
         <div><div class="tc-nome">${escapeHtml(conta.cliente)}</div><div class="tc-quando">desde ${formatarData(conta.criadoEm)}</div></div>
-        <div class="tc-total">${fmt(total)}</div>
+        <div class="tc-hd-right">
+          <div class="tc-total">${fmt(total)}</div>
+          <button class="tc-share" onclick="enviarConta('${conta.id}')" title="Enviar conta ao cliente">📤</button>
+        </div>
       </div>
       <div class="tc-itens">${resumoItens}</div>
       <div class="tc-actions">
@@ -516,6 +562,27 @@ function renderFiado(){
     `;
     lista.appendChild(div);
   });
+}
+
+function nomeNegocioAtual(){
+  const t = document.getElementById('brand-name').textContent;
+  return t==='Toca para pôr o nome da tua barraca' ? 'Barraca' : t;
+}
+function montarTextoConta(cliente, lancamentos){
+  const linhas = lancamentos.slice().sort((a,b)=>a.ts-b.ts)
+    .map(l=>`${horaCurta(l.ts)} — ${l.qtd}× ${l.nome}`);
+  const total = totalLancamentos(lancamentos);
+  return `🧾 ${nomeNegocioAtual()}\nCliente: ${cliente}\n\n${linhas.join('\n')}\n\nTotal: ${fmt(total)}\n\n_Conta gerada com A La Ruben_`;
+}
+function enviarConta(id){
+  const conta = ABERTAS.find(c=>c.id===id);
+  if(!conta) return;
+  const texto = montarTextoConta(conta.cliente, conta.lancamentos);
+  if(navigator.share){
+    navigator.share({ title: nomeNegocioAtual()+' — Conta', text: texto }).catch(()=>{});
+  } else {
+    window.open('https://wa.me/?text='+encodeURIComponent(texto), '_blank');
+  }
 }
 
 function formatarData(ts){
@@ -558,7 +625,7 @@ function renderHistorico(){
   document.getElementById('rel-mes-total').textContent = fmt(somaTotal(vMes));
   document.getElementById('rel-mes-qtd').textContent = vMes.length+' venda'+(vMes.length===1?'':'s');
 
-  const totalDivida = ABERTAS.reduce((s,c)=>s+totalConta(c.itens),0);
+  const totalDivida = ABERTAS.reduce((s,c)=>s+totalLancamentos(c.lancamentos),0);
   document.getElementById('rel-divida-total').textContent = fmt(totalDivida);
   document.getElementById('rel-divida-qtd').textContent = ABERTAS.length+' conta'+(ABERTAS.length===1?'':'s')+' aberta'+(ABERTAS.length===1?'':'s');
 
@@ -566,12 +633,13 @@ function renderHistorico(){
   document.getElementById('rel-ticket-medio').textContent = fmt(ticketMedio);
 
   const contagemItens = {};
-  vMes.forEach(h=>h.itens.forEach(i=>{ contagemItens[i.nome] = (contagemItens[i.nome]||0) + i.qtd; }));
+  vMes.forEach(h=>agruparLancamentos(h.lancamentos).forEach(i=>{ contagemItens[i.nome] = (contagemItens[i.nome]||0) + i.qtd; }));
   const topItem = Object.entries(contagemItens).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('rel-top-item').textContent = topItem ? `${topItem[0]} (${topItem[1]}×)` : '—';
 
   HIST.slice().sort((a,b)=>b.pagoEm-a.pagoEm).forEach(h=>{
-    const resumoItens = h.itens.map(i=>`<b>${i.qtd}×</b> ${i.nome}`).join(' · ');
+    const linhaTempo = h.lancamentos.slice().sort((a,b)=>a.ts-b.ts)
+      .map(l=>`<div class="tc-lanc"><span>${horaCurta(l.ts)}</span> — ${l.qtd}× ${escapeHtml(l.nome)}</div>`).join('');
     const div = document.createElement('div');
     div.className='tab-card paga';
     div.innerHTML = `
@@ -579,7 +647,7 @@ function renderHistorico(){
         <div><div class="tc-nome">${escapeHtml(h.cliente)}</div><div class="tc-quando">pago ${formatarData(h.pagoEm)}</div></div>
         <div class="tc-total">${fmt(h.total)}</div>
       </div>
-      <div class="tc-itens">${resumoItens}</div>
+      <div class="tc-itens">${linhaTempo}</div>
     `;
     lista.appendChild(div);
   });
@@ -611,6 +679,7 @@ function abrirNovaConta(){
   document.getElementById('conta-cliente').value='';
   document.getElementById('conta-cliente').disabled=false;
   document.getElementById('cancelar-conta-link').style.display='none';
+  document.getElementById('novo-pedido-hint').style.display='none';
   renderPickers();
   document.getElementById('modal-conta').classList.add('open');
   setTimeout(()=>document.getElementById('conta-cliente').focus(),200);
@@ -618,10 +687,11 @@ function abrirNovaConta(){
 function abrirContaExistente(id){
   const conta = ABERTAS.find(c=>c.id===id);
   if(!conta) return;
-  contaEditando = { id:conta.id, cliente:conta.cliente, itens: conta.itens.map(i=>({...i})) };
+  contaEditando = { id:conta.id, cliente:conta.cliente, itens: [] };
   document.getElementById('conta-cliente').value = conta.cliente;
   document.getElementById('conta-cliente').disabled=true;
   document.getElementById('cancelar-conta-link').style.display='block';
+  document.getElementById('novo-pedido-hint').style.display='block';
   renderPickers();
   document.getElementById('modal-conta').classList.add('open');
 }
@@ -686,11 +756,14 @@ function guardarConta(){
   if(!cliente){ toast('Escreva o nome do cliente'); nomeInput.focus(); return; }
   if(contaEditando.itens.length===0){ toast('Adicione pelo menos um item'); return; }
 
+  const agora = Date.now();
+  const novosLancamentos = contaEditando.itens.map(i=>({ ts:agora, itemId:i.itemId, nome:i.nome, preco:i.preco, qtd:i.qtd }));
+
   if(contaEditando.id){
     const conta = ABERTAS.find(c=>c.id===contaEditando.id);
-    conta.itens = contaEditando.itens;
+    conta.lancamentos.push(...novosLancamentos);
   } else {
-    ABERTAS.push({ id:uid(), cliente, itens:contaEditando.itens, criadoEm:Date.now() });
+    ABERTAS.push({ id:uid(), cliente, lancamentos:novosLancamentos, criadoEm:agora });
   }
   save(LS_ABERTAS, ABERTAS);
   fecharModalConta();
@@ -704,10 +777,10 @@ function guardarConta(){
 function pagarConta(id){
   const conta = ABERTAS.find(c=>c.id===id);
   if(!conta) return;
-  const total = totalConta(conta.itens);
+  const total = totalLancamentos(conta.lancamentos);
   if(!confirm(`Confirmar pagamento de ${fmt(total)} por ${conta.cliente}?`)) return;
 
-  HIST.push({ id:uid(), cliente:conta.cliente, itens:conta.itens, total, pagoEm:Date.now() });
+  HIST.push({ id:uid(), cliente:conta.cliente, lancamentos:conta.lancamentos, total, pagoEm:Date.now() });
   ABERTAS = ABERTAS.filter(c=>c.id!==id);
   save(LS_ABERTAS, ABERTAS);
   save(LS_HIST, HIST);

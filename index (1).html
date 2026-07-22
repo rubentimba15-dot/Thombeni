@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>A La Ruben — Fiado & Vendas</title>
+<meta name="apple-mobile-web-app-title" content="A La Ruben">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#BE4A28">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --paper:#FAF5E9;--paper2:#F1E8D6;--card:#FFFFFF;
+  --ink:#2B2320;--ink2:#5C5148;--ink3:#8A7F72;
+  --line:#E3D6BE;
+  --amber:#D98E2B;--amberd:#B9701A;--amberp:rgba(217,142,43,.12);
+  --rust:#BE4A28;--rustd:#9C3A1F;--rustp:rgba(190,74,40,.10);
+  --green:#4C7A5E;--greend:#396047;--greenp:rgba(76,122,94,.10);
+  --shadow:0 3px 10px rgba(43,35,32,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--paper);color:var(--ink);
+  min-height:100vh;overflow-x:hidden;
+  background-image:radial-gradient(circle at 1px 1px, rgba(43,35,32,.045) 1px, transparent 0);
+  background-size:16px 16px;
+}
+#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding-bottom:5.2rem}
+
+/* --- Topo --- */
+.topbar{padding:1.1rem 1.1rem .8rem;display:flex;flex-direction:column}
+
+.install-banner{
+  display:none;align-items:center;gap:.6rem;background:var(--rust);color:#fff;
+  padding:.65rem .9rem;font-size:.76rem;line-height:1.35;
+}
+.install-banner span{flex:1}
+.install-banner button.ib-instalar{
+  background:#fff;color:var(--rust);border:none;border-radius:6px;padding:.4rem .8rem;
+  font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'-apple-system',sans-serif;
+}
+.install-banner button.ib-fechar{
+  background:none;border:none;color:#fff;opacity:.8;font-size:1rem;cursor:pointer;padding:.2rem .3rem;line-height:1;
+}
+.brand{display:flex;flex-direction:column;cursor:pointer}
+.brand-name{font-family:Georgia,'Noto Serif',serif;font-weight:700;font-size:1.55rem;color:var(--ink);line-height:1.1}
+.app-brand{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin-bottom:.25rem}
+.brand-tag{font-size:.68rem;color:var(--ink3);margin-top:.15rem;letter-spacing:.02em}
+
+/* --- Vistas --- */
+main{flex:1;padding:0 1.1rem}
+.view{display:none}
+.view.active{display:block;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.summary-bar{
+  background:var(--ink);color:var(--paper);border-radius:12px;
+  padding:.95rem 1.1rem;display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:1rem;box-shadow:var(--shadow);
+}
+.summary-bar span:first-child{font-size:.72rem;opacity:.75;letter-spacing:.03em;text-transform:uppercase}
+.summary-total{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:1.15rem;color:var(--amber)}
+.summary-total.green{color:#8FD9B0}
+
+.empty{
+  text-align:center;color:var(--ink3);font-size:.82rem;padding:2.8rem 1.2rem;
+  border:1.5px dashed var(--line);border-radius:12px;line-height:1.6;
+}
+.empty.hide{display:none}
+
+/* --- Cartões de conta (estilo recibo/nota) --- */
+.tab-list{display:flex;flex-direction:column;gap:.7rem}
+.tab-card{
+  background:var(--card);border-radius:10px;padding:.9rem 1rem;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;border-left:4px solid var(--rust);
+}
+.tab-card.paga{border-left-color:var(--green)}
+.tab-card-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem}
+.tc-nome{font-weight:700;font-size:.95rem}
+.tc-quando{font-size:.66rem;color:var(--ink3);margin-top:.1rem}
+.tc-total{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:1.02rem;color:var(--rust);white-space:nowrap}
+.tab-card.paga .tc-total{color:var(--green)}
+.tc-hd-right{display:flex;align-items:center;gap:.5rem}
+.tc-share{background:var(--paper2);border:1px solid var(--line);border-radius:6px;width:28px;height:28px;
+  font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.tc-share:active{background:var(--amberp)}
+.tc-itens{font-size:.72rem;color:var(--ink2);margin-top:.5rem;line-height:1.55}
+.tc-lanc{font-size:.72rem;color:var(--ink2);padding:.12rem 0}
+.tc-lanc span{font-family:'SF Mono',Menlo,Consolas,monospace;color:var(--ink3);font-weight:600}
+.tc-itens b{color:var(--ink)}
+.tc-actions{display:flex;gap:.5rem;margin-top:.75rem}
+.tc-btn{flex:1;border:none;border-radius:7px;padding:.5rem 0;font-size:.76rem;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.tc-btn.add{background:var(--amberp);color:var(--amberd)}
+.tc-btn.pay{background:var(--green);color:#fff}
+.tc-stamp{
+  position:absolute;top:.6rem;right:-2.2rem;background:var(--green);color:#fff;
+  font-size:.6rem;font-weight:700;letter-spacing:.1em;padding:.2rem 2.4rem;
+  transform:rotate(28deg);box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+
+/* --- Cardápio (gestão) --- */
+.cat-block{margin-bottom:1.1rem}
+.cat-block h3{font-size:.85rem;font-weight:700;margin-bottom:.5rem;color:var(--ink2)}
+.menu-manage-list{display:flex;flex-direction:column;gap:.45rem}
+.mm-row{
+  background:var(--card);border-radius:8px;padding:.6rem .8rem;display:flex;
+  justify-content:space-between;align-items:center;box-shadow:var(--shadow);
+}
+.mm-info{display:flex;flex-direction:column}
+.mm-nome{font-size:.82rem;font-weight:600}
+.mm-preco{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:.72rem;color:var(--ink3);margin-top:.1rem}
+.mm-del{background:none;border:none;color:var(--rust);font-size:1.05rem;cursor:pointer;padding:.2rem .4rem}
+.btn-add-item{
+  width:100%;background:transparent;border:1.5px dashed var(--amberd);color:var(--amberd);
+  border-radius:9px;padding:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+
+/* --- Botão flutuante --- */
+.fab{
+  position:fixed;bottom:5.4rem;right:1.2rem;width:56px;height:56px;border-radius:50%;
+  background:var(--rust);color:#fff;border:none;font-size:1.7rem;line-height:1;cursor:pointer;
+  box-shadow:0 4px 14px rgba(190,74,40,.4);z-index:200;
+}
+.fab:active{transform:scale(.94)}
+#fab-novo.hide-fab{display:none}
+
+/* --- Navegação inferior --- */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;background:var(--card);
+  border-top:1px solid var(--line);display:flex;max-width:480px;margin:0 auto;z-index:150;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-btn{
+  flex:1;background:none;border:none;padding:.6rem 0 .55rem;display:flex;flex-direction:column;
+  align-items:center;gap:.15rem;color:var(--ink3);font-size:.63rem;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+.nav-btn .nav-ico{font-size:1.15rem}
+.nav-btn.active{color:var(--rust)}
+
+/* --- Modais --- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(43,35,32,.45);display:none;align-items:flex-end;
+  justify-content:center;z-index:500;
+}
+.modal-overlay.open{display:flex}
+.modal-sheet{
+  background:var(--paper);width:100%;max-width:480px;max-height:88vh;border-radius:16px 16px 0 0;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.modal-sheet.small{max-height:70vh}
+.modal-hd{
+  padding:.9rem 1.1rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+  align-items:center;background:var(--paper);
+}
+.modal-hd input{
+  flex:1;border:none;background:none;font-family:Georgia,'Noto Serif',serif;font-weight:700;font-size:1.25rem;
+  color:var(--ink);outline:none;
+}
+.modal-hd input::placeholder{color:var(--ink3);font-weight:400}
+.modal-hd button{background:none;border:none;font-size:1.2rem;color:var(--ink3);cursor:pointer;padding:.2rem .4rem}
+.modal-body{padding:1rem 1.1rem;overflow-y:auto;flex:1}
+.modal-body label{font-size:.68rem;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em;display:block;margin:.8rem 0 .3rem}
+.modal-body label:first-child{margin-top:0}
+.modal-body input[type=text],.modal-body input[type=number]{
+  width:100%;border:1.5px solid var(--line);border-radius:8px;padding:.55rem .7rem;font-size:.9rem;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fff;color:var(--ink);
+}
+.modal-body input:focus{outline:none;border-color:var(--amberd)}
+.menu-pick-block h4{font-size:.78rem;font-weight:700;color:var(--ink2);margin-bottom:.5rem}
+.pick-grid{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.pick-row{
+  display:flex;align-items:center;justify-content:space-between;background:var(--card);
+  border-radius:8px;padding:.55rem .7rem;box-shadow:var(--shadow);
+}
+.pr-info{display:flex;flex-direction:column}
+.pr-nome{font-size:.82rem;font-weight:600}
+.pr-preco{font-size:.68rem;color:var(--ink3);font-family:'SF Mono',Menlo,Consolas,monospace}
+.pr-qty{display:flex;align-items:center;gap:.5rem}
+.pr-btn{
+  width:28px;height:28px;border-radius:50%;border:none;background:var(--paper2);color:var(--ink);
+  font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.pr-btn.plus{background:var(--amber);color:#fff}
+.pr-qtd-num{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;min-width:18px;text-align:center;font-size:.85rem}
+.itens-resumo{font-size:.72rem;color:var(--ink3);text-align:center;padding-top:.3rem}
+.modal-ft{
+  padding:.85rem 1.1rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;
+  align-items:center;background:var(--paper);gap:.8rem;
+}
+.modal-total{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:1.1rem}
+.btn-primary{
+  background:var(--rust);color:#fff;border:none;border-radius:8px;padding:.65rem 1.3rem;
+  font-size:.85rem;font-weight:700;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;
+}
+.cancel-link{
+  display:block;text-align:center;font-size:.72rem;color:var(--ink3);margin-top:.6rem;
+  text-decoration:underline;cursor:pointer;
+}
+.seg{display:flex;gap:.5rem}
+.seg-btn{
+  flex:1;padding:.5rem 0;border-radius:7px;border:1.5px solid var(--line);background:#fff;
+  color:var(--ink2);font-size:.78rem;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+.seg-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* --- Toast --- */
+#toast{
+  position:fixed;bottom:5.6rem;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);padding:.6rem 1.1rem;border-radius:8px;font-size:.78rem;
+  opacity:0;transition:all .25s;z-index:9999;max-width:88%;text-align:center;pointer-events:none;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(min-width:481px){body{background-color:var(--paper2)}#app{box-shadow:0 0 40px rgba(43,35,32,.12)}}
+
+/* --- ECRÃ DE BLOQUEIO (trial/licença) --- */
+#lock-screen{position:fixed;inset:0;background:var(--paper);z-index:99999;display:none;overflow-y:auto;padding:1.4rem 1.2rem 2.5rem}
+#lock-screen.show{display:block}
+.lock-wrap{max-width:420px;margin:0 auto}
+.lock-title{font-family:Georgia,'Noto Serif',serif;font-weight:700;font-size:1.4rem;margin-bottom:.3rem}
+.lock-sub{font-size:.82rem;color:var(--ink2);line-height:1.55;margin-bottom:1.3rem}
+.lock-card{background:var(--card);border-radius:12px;padding:1rem 1.1rem;box-shadow:var(--shadow);margin-bottom:1rem}
+.lock-card h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:.5rem}
+.device-id{
+  font-family:'SF Mono',Menlo,Consolas,monospace;font-size:1.3rem;font-weight:700;letter-spacing:.08em;
+  background:var(--paper2);border:1.5px dashed var(--line);border-radius:8px;padding:.6rem;text-align:center;
+}
+.lock-copy{width:100%;margin-top:.55rem;background:none;border:1.5px solid var(--line);border-radius:7px;
+  padding:.45rem 0;font-size:.74rem;color:var(--ink2);cursor:pointer;font-family:'-apple-system',sans-serif}
+.pay-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;font-size:.85rem;border-bottom:1px solid var(--line)}
+.pay-row:last-child{border-bottom:none}
+.pay-row b{font-family:'SF Mono',Menlo,Consolas,monospace}
+.wa-btn{
+  display:block;width:100%;text-align:center;background:#25D366;color:#fff;text-decoration:none;
+  border-radius:8px;padding:.7rem 0;font-weight:700;font-size:.85rem;margin-top:.2rem;
+}
+#lock-chave{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:.65rem .8rem;font-size:1rem;
+  font-family:'SF Mono',Menlo,Consolas,monospace;text-transform:uppercase;text-align:center;letter-spacing:.06em;color:var(--ink)}
+#lock-chave:focus{outline:none;border-color:var(--amberd)}
+.lock-erro{color:var(--rust);font-size:.76rem;text-align:center;margin-top:.5rem;display:none}
+.lock-erro.show{display:block}
+.trial-badge{
+  background:var(--amberp);color:var(--amberd);font-size:.68rem;font-weight:600;text-align:center;
+  padding:.4rem;border-radius:7px;margin:0 1.1rem .6rem;
+}
+.trial-badge.urgente{background:var(--rustp);color:var(--rustd)}
+
+/* --- Painel de relatórios (Histórico) --- */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.9rem}
+.stat-tile{background:var(--card);border-radius:10px;padding:.75rem .85rem;box-shadow:var(--shadow)}
+.stat-tile .st-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);font-weight:700}
+.stat-tile .st-val{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:1.05rem;margin-top:.25rem;color:var(--ink)}
+.stat-tile .st-sub{font-size:.65rem;color:var(--ink3);margin-top:.1rem}
+.stat-tile.destaque .st-val{color:var(--green)}
+.stat-tile.alerta .st-val{color:var(--rust)}
+.extra-card{background:var(--card);border-radius:10px;padding:.85rem .95rem;box-shadow:var(--shadow);margin-bottom:1rem}
+.extra-card .ec-row{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;padding:.32rem 0;border-bottom:1px solid var(--line)}
+.extra-card .ec-row:last-child{border-bottom:none}
+.extra-card .ec-row span:last-child{font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700}
+.section-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);margin:0 0 .5rem .1rem}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="install-banner" id="install-banner">
+    <span id="install-banner-text">📲 Instala esta app no telemóvel para acesso rápido</span>
+    <button class="ib-instalar" id="install-banner-btn" onclick="instalarApp()">Instalar</button>
+    <button class="ib-fechar" onclick="fecharInstallBanner()">✕</button>
+  </div>
+
+  <div class="topbar">
+    <div class="app-brand">A La Ruben</div>
+    <div class="brand" onclick="editarNome()">
+      <div class="brand-name" id="brand-name">Toca para pôr o nome da tua barraca</div>
+      <div class="brand-tag">caderneta de fiado &amp; vendas</div>
+    </div>
+  </div>
+
+  <div class="trial-badge" id="trial-badge" style="display:none"></div>
+
+  <main>
+    <section id="view-fiado" class="view active">
+      <div class="summary-bar">
+        <span>Em dívida (fiado)</span>
+        <span class="summary-total" id="fiado-total">MT 0,00</span>
+      </div>
+      <div id="fiado-list" class="tab-list"></div>
+      <div class="empty" id="fiado-empty">Ainda não há nenhuma conta aberta.<br>Toque no botão "+" para começar uma.</div>
+    </section>
+
+    <section id="view-historico" class="view">
+      <div class="section-label">Resumo de vendas</div>
+      <div class="stats-grid">
+        <div class="stat-tile destaque">
+          <div class="st-label">Hoje</div>
+          <div class="st-val" id="rel-hoje-total">MT 0,00</div>
+          <div class="st-sub" id="rel-hoje-qtd">0 vendas</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">Esta semana</div>
+          <div class="st-val" id="rel-semana-total">MT 0,00</div>
+          <div class="st-sub" id="rel-semana-qtd">0 vendas</div>
+        </div>
+        <div class="stat-tile">
+          <div class="st-label">Este mês</div>
+          <div class="st-val" id="rel-mes-total">MT 0,00</div>
+          <div class="st-sub" id="rel-mes-qtd">0 vendas</div>
+        </div>
+        <div class="stat-tile alerta">
+          <div class="st-label">Em dívida agora</div>
+          <div class="st-val" id="rel-divida-total">MT 0,00</div>
+          <div class="st-sub" id="rel-divida-qtd">0 contas abertas</div>
+        </div>
+      </div>
+      <div class="extra-card">
+        <div class="ec-row"><span>Ticket médio (mês)</span><span id="rel-ticket-medio">MT 0,00</span></div>
+        <div class="ec-row"><span>Mais vendido (mês)</span><span id="rel-top-item">—</span></div>
+      </div>
+      <div class="section-label">Pagamentos registados</div>
+      <div id="hist-list" class="tab-list"></div>
+      <div class="empty" id="hist-empty">Ainda não há pagamentos registados.</div>
+    </section>
+
+    <section id="view-cardapio" class="view">
+      <div class="cat-block">
+        <h3>🍺 Bebidas</h3>
+        <div id="menu-bebidas" class="menu-manage-list"></div>
+      </div>
+      <div class="cat-block">
+        <h3>🍢 Comidas</h3>
+        <div id="menu-comidas" class="menu-manage-list"></div>
+      </div>
+      <button class="btn-add-item" onclick="abrirModalItem()">+ Novo item do cardápio</button>
+    </section>
+  </main>
+
+  <button class="fab" id="fab-novo" onclick="abrirNovaConta()">+</button>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="fiado" onclick="mudarView('fiado')"><span class="nav-ico">📒</span><span>Fiado</span></button>
+    <button class="nav-btn" data-view="historico" onclick="mudarView('historico')"><span class="nav-ico">✅</span><span>Histórico</span></button>
+    <button class="nav-btn" data-view="cardapio" onclick="mudarView('cardapio')"><span class="nav-ico">📋</span><span>Cardápio</span></button>
+  </nav>
+</div>
+
+<!-- Modal: nova conta / adicionar itens -->
+<div class="modal-overlay" id="modal-conta">
+  <div class="modal-sheet">
+    <div class="modal-hd">
+      <input id="conta-cliente" type="text" placeholder="Nome do cliente">
+      <button onclick="fecharModalConta()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="novo-pedido-hint" class="itens-resumo" style="display:none;margin-bottom:.7rem;font-style:italic">🕐 A registar um novo pedido, com a hora de agora — os pedidos anteriores desta conta continuam guardados.</div>
+      <div class="menu-pick-block">
+        <h4>🍺 Bebidas</h4>
+        <div id="pick-bebidas" class="pick-grid"></div>
+      </div>
+      <div class="menu-pick-block">
+        <h4>🍢 Comidas</h4>
+        <div id="pick-comidas" class="pick-grid"></div>
+      </div>
+      <div id="conta-itens-vazio" class="itens-resumo">Toque nos itens acima para adicionar à conta.</div>
+      <div class="cancel-link" id="cancelar-conta-link" onclick="cancelarConta()" style="display:none">Cancelar esta conta</div>
+    </div>
+    <div class="modal-ft">
+      <span class="modal-total" id="conta-total">MT 0,00</span>
+      <button class="btn-primary" onclick="guardarConta()">Guardar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: novo item de menu -->
+<div class="modal-overlay" id="modal-item">
+  <div class="modal-sheet small">
+    <div class="modal-hd"><span style="font-family:Georgia,'Noto Serif',serif;font-weight:700;font-size:1.15rem">Novo item</span><button onclick="fecharModalItem()">✕</button></div>
+    <div class="modal-body">
+      <label>Nome</label>
+      <input id="item-nome" type="text" placeholder="Ex: Cerveja 2M">
+      <label>Preço (MT)</label>
+      <input id="item-preco" type="number" inputmode="decimal" placeholder="0">
+      <label>Categoria</label>
+      <div class="seg">
+        <button class="seg-btn active" id="seg-bebida" onclick="setCat('bebida')">🍺 Bebida</button>
+        <button class="seg-btn" id="seg-comida" onclick="setCat('comida')">🍢 Comida</button>
+      </div>
+    </div>
+    <div class="modal-ft" style="justify-content:flex-end">
+      <button class="btn-primary" onclick="guardarItemMenu()">Guardar item</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div id="lock-screen">
+  <div class="lock-wrap">
+    <div class="lock-title" id="lock-title">Período de teste terminado</div>
+    <div class="lock-sub" id="lock-sub">Os teus dados continuam guardados no telemóvel — só precisas de activar para continuares a usar a app.</div>
+
+    <div class="lock-card">
+      <h4>O teu código de aparelho</h4>
+      <div class="device-id" id="lock-device-id">------</div>
+      <button class="lock-copy" onclick="copiarDeviceId()">📋 Copiar código</button>
+    </div>
+
+    <div class="lock-card">
+      <h4>Como activar</h4>
+      <div class="pay-row"><span>M-Pesa</span><b id="lock-mpesa">—</b></div>
+      <div class="pay-row"><span>e-Mola</span><b id="lock-emola">—</b></div>
+      <div class="pay-row"><span>Valor</span><b id="lock-preco">—</b></div>
+      <a href="#" id="lock-wa" class="wa-btn" target="_blank">💬 Enviar comprovativo por WhatsApp</a>
+    </div>
+
+    <div class="lock-card">
+      <h4>Já tenho uma chave</h4>
+      <input id="lock-chave" type="text" placeholder="XXXXX-XXXXX" maxlength="11">
+      <button class="btn-primary" style="width:100%;margin-top:.6rem" onclick="activarChave()">Activar</button>
+      <div class="lock-erro" id="lock-erro">Chave inválida para este aparelho. Confirma que copiaste certo.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// ESTADO E PERSISTÊNCIA (localStorage — os dados ficam só neste telefone/navegador)
+// =====================================================================
+// =====================================================================
+// LICENCIAMENTO — AJUSTA ESTES DADOS ANTES DE DISTRIBUIRES A APP
+// =====================================================================
+const LICENCA_CONFIG = {
+  diasTrial: 45,           // dias de teste grátis
+  diasValidadeChave: 365,  // validade de cada chave (renovação anual)
+  precoTexto: '200 MT/ano', // ex: '1.000 MT' — AJUSTA AQUI
+  numeroMpesa: '85 038 4614',  // ex: '84 000 0000' — AJUSTA AQUI
+  numeroEmola: '86 925 6932',  // ex: '86 000 0000' — AJUSTA AQUI
+  whatsapp: '258850384614',            // ex: '258840000000' (com código do país, sem +, sem espaços) — AJUSTA AQUI
+  segredo: 'Rbenny1788', // AJUSTA AQUI — usado para gerar/validar chaves
+};
+
+const LS_MENU='fiado_menu', LS_ABERTAS='fiado_abertas', LS_HIST='fiado_historico', LS_NOME='fiado_nome_negocio';
+
+function load(key, fallback){
+  try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; }catch(e){ return fallback; }
+}
+function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+let MENU = load(LS_MENU, null);
+if(!MENU){
+  MENU = [
+    {id:'b1', nome:'Cerveja 2M', preco:90, cat:'bebida'},
+    {id:'b2', nome:'Cerveja Laurentina', preco:90, cat:'bebida'},
+    {id:'b3', nome:'Refrigerante', preco:60, cat:'bebida'},
+    {id:'b4', nome:'Água', preco:40, cat:'bebida'},
+    {id:'b5', nome:'R1 / Aguardente', preco:50, cat:'bebida'},
+    {id:'c1', nome:'Espetada', preco:100, cat:'comida'},
+    {id:'c2', nome:'Salgadinhos', preco:40, cat:'comida'},
+    {id:'c3', nome:'Sanduíche', preco:70, cat:'comida'},
+  ];
+  save(LS_MENU, MENU);
+}
+let ABERTAS = load(LS_ABERTAS, []);
+let HIST = load(LS_HIST, []);
+
+// Migração automática: contas guardadas antes desta versão tinham "itens" em vez
+// de "lancamentos" com hora. Convertemos para não perder nada já registado.
+let migrou = false;
+ABERTAS.forEach(c=>{
+  if(!c.lancamentos && c.itens){
+    c.lancamentos = c.itens.map(i=>({ ts:c.criadoEm||Date.now(), itemId:i.itemId, nome:i.nome, preco:i.preco, qtd:i.qtd }));
+    delete c.itens;
+    migrou = true;
+  }
+});
+HIST.forEach(h=>{
+  if(!h.lancamentos && h.itens){
+    h.lancamentos = h.itens.map(i=>({ ts:h.pagoEm||Date.now(), itemId:i.itemId, nome:i.nome, preco:i.preco, qtd:i.qtd }));
+    delete h.itens;
+    migrou = true;
+  }
+});
+if(migrou){ save(LS_ABERTAS, ABERTAS); save(LS_HIST, HIST); }
+
+// Conta em edição no modal (rascunho antes de "Guardar")
+let contaEditando = null; // { id (null se nova), cliente, itens:[{itemId,nome,preco,qtd}] }
+let catItemNovo = 'bebida';
+
+// =====================================================================
+// UTILITÁRIOS
+// =====================================================================
+function fmt(n){
+  n = Number(n)||0;
+  return 'MT ' + n.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function uid(){ return 'x'+Date.now()+Math.random().toString(36).slice(2,7); }
+function totalConta(itens){ return itens.reduce((s,i)=>s+i.preco*i.qtd,0); }
+function totalLancamentos(lancamentos){ return lancamentos.reduce((s,l)=>s+l.preco*l.qtd,0); }
+function agruparLancamentos(lancamentos){
+  const mapa = {};
+  lancamentos.forEach(l=>{
+    if(!mapa[l.itemId]) mapa[l.itemId] = { nome:l.nome, preco:l.preco, qtd:0 };
+    mapa[l.itemId].qtd += l.qtd;
+  });
+  return Object.values(mapa);
+}
+function horaCurta(ts){
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// =====================================================================
+// NAVEGAÇÃO
+// =====================================================================
+function mudarView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.toggle('active', el.dataset.view===v));
+  document.getElementById('fab-novo').classList.toggle('hide-fab', v!=='fiado');
+  if(v==='historico') renderHistorico();
+}
+
+// =====================================================================
+// NOME DO NEGÓCIO
+// =====================================================================
+function carregarNome(){
+  const nome = load(LS_NOME, null);
+  if(nome) document.getElementById('brand-name').textContent = nome;
+}
+function editarNome(){
+  const actual = document.getElementById('brand-name').textContent;
+  const ehPlaceholder = actual === 'Toca para pôr o nome da tua barraca';
+  const novo = prompt('Nome da tua barraca/restaurante:', ehPlaceholder ? '' : actual);
+  if(novo && novo.trim()){
+    document.getElementById('brand-name').textContent = novo.trim();
+    save(LS_NOME, novo.trim());
+  }
+}
+
+// =====================================================================
+// RENDER: FIADO (contas em aberto)
+// =====================================================================
+function renderFiado(){
+  const lista = document.getElementById('fiado-list');
+  const vazio = document.getElementById('fiado-empty');
+  lista.innerHTML='';
+  if(ABERTAS.length===0){ vazio.classList.remove('hide'); }
+  else { vazio.classList.add('hide'); }
+
+  const totalGeral = ABERTAS.reduce((s,c)=>s+totalLancamentos(c.lancamentos),0);
+  document.getElementById('fiado-total').textContent = fmt(totalGeral);
+
+  ABERTAS.slice().sort((a,b)=>b.criadoEm-a.criadoEm).forEach(conta=>{
+    const total = totalLancamentos(conta.lancamentos);
+    const agrupado = agruparLancamentos(conta.lancamentos);
+    const resumoItens = agrupado.map(i=>`<b>${i.qtd}×</b> ${escapeHtml(i.nome)}`).join(' · ') || '<i>sem itens</i>';
+    const div = document.createElement('div');
+    div.className='tab-card';
+    div.innerHTML = `
+      <div class="tab-card-hd">
+        <div><div class="tc-nome">${escapeHtml(conta.cliente)}</div><div class="tc-quando">desde ${formatarData(conta.criadoEm)}</div></div>
+        <div class="tc-hd-right">
+          <div class="tc-total">${fmt(total)}</div>
+          <button class="tc-share" onclick="enviarConta('${conta.id}')" title="Enviar conta ao cliente">📤</button>
+        </div>
+      </div>
+      <div class="tc-itens">${resumoItens}</div>
+      <div class="tc-actions">
+        <button class="tc-btn add" onclick="abrirContaExistente('${conta.id}')">+ Adicionar</button>
+        <button class="tc-btn pay" onclick="pagarConta('${conta.id}')">Pagar ${fmt(total)}</button>
+      </div>
+    `;
+    lista.appendChild(div);
+  });
+}
+
+function nomeNegocioAtual(){
+  const t = document.getElementById('brand-name').textContent;
+  return t==='Toca para pôr o nome da tua barraca' ? 'Barraca' : t;
+}
+function montarTextoConta(cliente, lancamentos){
+  const linhas = lancamentos.slice().sort((a,b)=>a.ts-b.ts)
+    .map(l=>`${horaCurta(l.ts)} — ${l.qtd}× ${l.nome}`);
+  const total = totalLancamentos(lancamentos);
+  return `🧾 ${nomeNegocioAtual()}\nCliente: ${cliente}\n\n${linhas.join('\n')}\n\nTotal: ${fmt(total)}\n\n_Conta gerada com A La Ruben_`;
+}
+function enviarConta(id){
+  const conta = ABERTAS.find(c=>c.id===id);
+  if(!conta) return;
+  const texto = montarTextoConta(conta.cliente, conta.lancamentos);
+  if(navigator.share){
+    navigator.share({ title: nomeNegocioAtual()+' — Conta', text: texto }).catch(()=>{});
+  } else {
+    window.open('https://wa.me/?text='+encodeURIComponent(texto), '_blank');
+  }
+}
+
+function formatarData(ts){
+  const d = new Date(ts);
+  const hoje = new Date();
+  const mesmodia = d.toDateString()===hoje.toDateString();
+  const hora = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+  if(mesmodia) return 'hoje, '+hora;
+  return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+' às '+hora;
+}
+function escapeHtml(s){
+  const d=document.createElement('div'); d.textContent=s; return d.innerHTML;
+}
+
+// =====================================================================
+// RENDER: HISTÓRICO
+// =====================================================================
+function inicioDia(ts){ const d=new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
+function inicioSemana(ts){ const d=new Date(ts); const diaSemana=(d.getDay()+6)%7; /* 0=Seg...6=Dom */
+  d.setDate(d.getDate()-diaSemana); d.setHours(0,0,0,0); return d.getTime(); }
+function inicioMes(ts){ const d=new Date(ts); d.setDate(1); d.setHours(0,0,0,0); return d.getTime(); }
+
+function renderHistorico(){
+  const lista = document.getElementById('hist-list');
+  const vazio = document.getElementById('hist-empty');
+  lista.innerHTML='';
+  if(HIST.length===0){ vazio.classList.remove('hide'); } else { vazio.classList.add('hide'); }
+
+  const agora = Date.now();
+  const iDia = inicioDia(agora), iSemana = inicioSemana(agora), iMes = inicioMes(agora);
+  const vHoje = HIST.filter(h=>h.pagoEm>=iDia);
+  const vSemana = HIST.filter(h=>h.pagoEm>=iSemana);
+  const vMes = HIST.filter(h=>h.pagoEm>=iMes);
+  const somaTotal = arr=>arr.reduce((s,h)=>s+h.total,0);
+
+  document.getElementById('rel-hoje-total').textContent = fmt(somaTotal(vHoje));
+  document.getElementById('rel-hoje-qtd').textContent = vHoje.length+' venda'+(vHoje.length===1?'':'s');
+  document.getElementById('rel-semana-total').textContent = fmt(somaTotal(vSemana));
+  document.getElementById('rel-semana-qtd').textContent = vSemana.length+' venda'+(vSemana.length===1?'':'s');
+  document.getElementById('rel-mes-total').textContent = fmt(somaTotal(vMes));
+  document.getElementById('rel-mes-qtd').textContent = vMes.length+' venda'+(vMes.length===1?'':'s');
+
+  const totalDivida = ABERTAS.reduce((s,c)=>s+totalLancamentos(c.lancamentos),0);
+  document.getElementById('rel-divida-total').textContent = fmt(totalDivida);
+  document.getElementById('rel-divida-qtd').textContent = ABERTAS.length+' conta'+(ABERTAS.length===1?'':'s')+' aberta'+(ABERTAS.length===1?'':'s');
+
+  const ticketMedio = vMes.length ? somaTotal(vMes)/vMes.length : 0;
+  document.getElementById('rel-ticket-medio').textContent = fmt(ticketMedio);
+
+  const contagemItens = {};
+  vMes.forEach(h=>agruparLancamentos(h.lancamentos).forEach(i=>{ contagemItens[i.nome] = (contagemItens[i.nome]||0) + i.qtd; }));
+  const topItem = Object.entries(contagemItens).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('rel-top-item').textContent = topItem ? `${topItem[0]} (${topItem[1]}×)` : '—';
+
+  HIST.slice().sort((a,b)=>b.pagoEm-a.pagoEm).forEach(h=>{
+    const linhaTempo = h.lancamentos.slice().sort((a,b)=>a.ts-b.ts)
+      .map(l=>`<div class="tc-lanc"><span>${horaCurta(l.ts)}</span> — ${l.qtd}× ${escapeHtml(l.nome)}</div>`).join('');
+    const div = document.createElement('div');
+    div.className='tab-card paga';
+    div.innerHTML = `
+      <div class="tab-card-hd">
+        <div><div class="tc-nome">${escapeHtml(h.cliente)}</div><div class="tc-quando">pago ${formatarData(h.pagoEm)}</div></div>
+        <div class="tc-total">${fmt(h.total)}</div>
+      </div>
+      <div class="tc-itens">${linhaTempo}</div>
+    `;
+    lista.appendChild(div);
+  });
+}
+
+// =====================================================================
+// RENDER: CARDÁPIO (gestão de itens/preços)
+// =====================================================================
+function renderCardapio(){
+  const beb = document.getElementById('menu-bebidas');
+  const com = document.getElementById('menu-comidas');
+  beb.innerHTML=''; com.innerHTML='';
+  MENU.forEach(item=>{
+    const row = document.createElement('div');
+    row.className='mm-row';
+    row.innerHTML = `
+      <div class="mm-info"><div class="mm-nome">${escapeHtml(item.nome)}</div><div class="mm-preco">${fmt(item.preco)}</div></div>
+      <button class="mm-del" onclick="apagarItemMenu('${item.id}')">🗑️</button>
+    `;
+    (item.cat==='bebida'?beb:com).appendChild(row);
+  });
+}
+
+// =====================================================================
+// MODAL: NOVA CONTA / ADICIONAR ITENS
+// =====================================================================
+function abrirNovaConta(){
+  contaEditando = { id:null, cliente:'', itens:[] };
+  document.getElementById('conta-cliente').value='';
+  document.getElementById('conta-cliente').disabled=false;
+  document.getElementById('cancelar-conta-link').style.display='none';
+  document.getElementById('novo-pedido-hint').style.display='none';
+  renderPickers();
+  document.getElementById('modal-conta').classList.add('open');
+  setTimeout(()=>document.getElementById('conta-cliente').focus(),200);
+}
+function abrirContaExistente(id){
+  const conta = ABERTAS.find(c=>c.id===id);
+  if(!conta) return;
+  contaEditando = { id:conta.id, cliente:conta.cliente, itens: [] };
+  document.getElementById('conta-cliente').value = conta.cliente;
+  document.getElementById('conta-cliente').disabled=true;
+  document.getElementById('cancelar-conta-link').style.display='block';
+  document.getElementById('novo-pedido-hint').style.display='block';
+  renderPickers();
+  document.getElementById('modal-conta').classList.add('open');
+}
+function fecharModalConta(){
+  document.getElementById('modal-conta').classList.remove('open');
+  contaEditando = null;
+}
+function cancelarConta(){
+  if(!contaEditando || !contaEditando.id) return;
+  if(!confirm('Cancelar esta conta em aberto? Não fica registada em nenhum histórico.')) return;
+  ABERTAS = ABERTAS.filter(c=>c.id!==contaEditando.id);
+  save(LS_ABERTAS, ABERTAS);
+  fecharModalConta();
+  renderFiado();
+  toast('Conta cancelada');
+}
+
+function renderPickers(){
+  const pb = document.getElementById('pick-bebidas');
+  const pc = document.getElementById('pick-comidas');
+  pb.innerHTML=''; pc.innerHTML='';
+  MENU.forEach(item=>{
+    const existente = contaEditando.itens.find(i=>i.itemId===item.id);
+    const qtd = existente?existente.qtd:0;
+    const row = document.createElement('div');
+    row.className='pick-row';
+    row.innerHTML = `
+      <div class="pr-info"><div class="pr-nome">${escapeHtml(item.nome)}</div><div class="pr-preco">${fmt(item.preco)}</div></div>
+      <div class="pr-qty">
+        <button class="pr-btn minus" style="visibility:${qtd>0?'visible':'hidden'}" onclick="alterarQtd('${item.id}',-1)">−</button>
+        <span class="pr-qtd-num">${qtd}</span>
+        <button class="pr-btn plus" onclick="alterarQtd('${item.id}',1)">+</button>
+      </div>
+    `;
+    (item.cat==='bebida'?pb:pc).appendChild(row);
+  });
+  atualizarTotalConta();
+}
+function alterarQtd(itemId, delta){
+  const item = MENU.find(m=>m.id===itemId);
+  if(!item) return;
+  let linha = contaEditando.itens.find(i=>i.itemId===itemId);
+  if(!linha){
+    if(delta<0) return;
+    linha = {itemId:item.id, nome:item.nome, preco:item.preco, qtd:0};
+    contaEditando.itens.push(linha);
+  }
+  linha.qtd += delta;
+  if(linha.qtd<=0){
+    contaEditando.itens = contaEditando.itens.filter(i=>i.itemId!==itemId);
+  }
+  renderPickers();
+}
+function atualizarTotalConta(){
+  const total = totalConta(contaEditando.itens);
+  document.getElementById('conta-total').textContent = fmt(total);
+  document.getElementById('conta-itens-vazio').style.display = contaEditando.itens.length?'none':'block';
+}
+function guardarConta(){
+  const nomeInput = document.getElementById('conta-cliente');
+  const cliente = (contaEditando.id ? contaEditando.cliente : nomeInput.value.trim());
+  if(!cliente){ toast('Escreva o nome do cliente'); nomeInput.focus(); return; }
+  if(contaEditando.itens.length===0){ toast('Adicione pelo menos um item'); return; }
+
+  const agora = Date.now();
+  const novosLancamentos = contaEditando.itens.map(i=>({ ts:agora, itemId:i.itemId, nome:i.nome, preco:i.preco, qtd:i.qtd }));
+
+  if(contaEditando.id){
+    const conta = ABERTAS.find(c=>c.id===contaEditando.id);
+    conta.lancamentos.push(...novosLancamentos);
+  } else {
+    ABERTAS.push({ id:uid(), cliente, lancamentos:novosLancamentos, criadoEm:agora });
+  }
+  save(LS_ABERTAS, ABERTAS);
+  fecharModalConta();
+  renderFiado();
+  toast('Conta guardada');
+}
+
+// =====================================================================
+// PAGAR CONTA → move para o histórico
+// =====================================================================
+function pagarConta(id){
+  const conta = ABERTAS.find(c=>c.id===id);
+  if(!conta) return;
+  const total = totalLancamentos(conta.lancamentos);
+  if(!confirm(`Confirmar pagamento de ${fmt(total)} por ${conta.cliente}?`)) return;
+
+  HIST.push({ id:uid(), cliente:conta.cliente, lancamentos:conta.lancamentos, total, pagoEm:Date.now() });
+  ABERTAS = ABERTAS.filter(c=>c.id!==id);
+  save(LS_ABERTAS, ABERTAS);
+  save(LS_HIST, HIST);
+  renderFiado();
+  renderHistorico();
+  toast(`Pago: ${fmt(total)} — ${conta.cliente}`);
+}
+
+// =====================================================================
+// MODAL: NOVO ITEM DO CARDÁPIO
+// =====================================================================
+function abrirModalItem(){
+  document.getElementById('item-nome').value='';
+  document.getElementById('item-preco').value='';
+  setCat('bebida');
+  document.getElementById('modal-item').classList.add('open');
+}
+function fecharModalItem(){ document.getElementById('modal-item').classList.remove('open'); }
+function setCat(cat){
+  catItemNovo = cat;
+  document.getElementById('seg-bebida').classList.toggle('active', cat==='bebida');
+  document.getElementById('seg-comida').classList.toggle('active', cat==='comida');
+}
+function guardarItemMenu(){
+  const nome = document.getElementById('item-nome').value.trim();
+  const preco = parseFloat(document.getElementById('item-preco').value);
+  if(!nome){ toast('Escreva o nome do item'); return; }
+  if(isNaN(preco) || preco<0){ toast('Escreva um preço válido'); return; }
+  MENU.push({ id:uid(), nome, preco, cat:catItemNovo });
+  save(LS_MENU, MENU);
+  fecharModalItem();
+  renderCardapio();
+  toast('Item adicionado ao cardápio');
+}
+function apagarItemMenu(id){
+  if(!confirm('Remover este item do cardápio? Contas já abertas com este item não são alteradas.')) return;
+  MENU = MENU.filter(m=>m.id!==id);
+  save(LS_MENU, MENU);
+  renderCardapio();
+}
+
+// =====================================================================
+// LICENCIAMENTO — geração/validação de chaves e ecrã de bloqueio
+// =====================================================================
+const LS_INSTALADO='licenca_instalado_em', LS_DEVICE='licenca_device_id',
+      LS_PERIODO='licenca_periodo', LS_ATIVADA='licenca_activada_em';
+
+const ALFABETO_CHAVE='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem 0/O e 1/I, para não confundir
+
+function gerarDeviceId(){
+  let s='';
+  for(let i=0;i<6;i++) s+=ALFABETO_CHAVE[Math.floor(Math.random()*ALFABETO_CHAVE.length)];
+  return s;
+}
+function fnv1a(str, seed){
+  let h = seed>>>0;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h>>>0;
+}
+function paraBase(n){
+  let s='';
+  for(let i=0;i<5;i++){ s = ALFABETO_CHAVE[n % ALFABETO_CHAVE.length] + s; n = Math.floor(n / ALFABETO_CHAVE.length); }
+  return s;
+}
+function gerarChave(deviceId, periodo){
+  const base = deviceId+'|'+periodo+'|'+LICENCA_CONFIG.segredo;
+  const h1 = fnv1a(base, 2166136261);
+  const h2 = fnv1a(base+'#', 84696351);
+  return paraBase(h1)+'-'+paraBase(h2);
+}
+function normalizarChave(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
+
+function obterEstadoLicenca(){
+  let instaladoEm = load(LS_INSTALADO, null);
+  if(!instaladoEm){ instaladoEm = Date.now(); save(LS_INSTALADO, instaladoEm); }
+  let deviceId = load(LS_DEVICE, null);
+  if(!deviceId){ deviceId = gerarDeviceId(); save(LS_DEVICE, deviceId); }
+  const periodo = load(LS_PERIODO, 0);
+  const activadaEm = load(LS_ATIVADA, null);
+
+  const diasInstalado = (Date.now()-instaladoEm)/86400000;
+  const emTrial = periodo===0 && diasInstalado <= LICENCA_CONFIG.diasTrial;
+  const diasTrialRestantes = Math.ceil(LICENCA_CONFIG.diasTrial - diasInstalado);
+  const licencaValida = periodo>0 && activadaEm && (Date.now()-activadaEm) <= LICENCA_CONFIG.diasValidadeChave*86400000;
+  const diasLicencaRestantes = licencaValida ? Math.ceil(LICENCA_CONFIG.diasValidadeChave - (Date.now()-activadaEm)/86400000) : 0;
+
+  return { instaladoEm, deviceId, periodo, activadaEm, emTrial, diasTrialRestantes, licencaValida, diasLicencaRestantes,
+           bloqueado: !emTrial && !licencaValida };
+}
+
+function verificarLicenca(){
+  const st = obterEstadoLicenca();
+  const badge = document.getElementById('trial-badge');
+
+  if(st.bloqueado){
+    document.getElementById('lock-screen').classList.add('show');
+    document.getElementById('lock-title').textContent = st.periodo>0 ? 'A tua licença expirou' : 'Período de teste terminado';
+    document.getElementById('lock-sub').textContent = st.periodo>0
+      ? 'Já passou 1 ano desde a última activação. Renova para continuares a usar a app — os teus dados continuam todos guardados.'
+      : `Experimentaste a app durante ${LICENCA_CONFIG.diasTrial} dias. Para continuares a usar, activa com uma chave — os teus dados continuam todos guardados.`;
+    document.getElementById('lock-device-id').textContent = st.deviceId;
+    document.getElementById('lock-mpesa').textContent = LICENCA_CONFIG.numeroMpesa;
+    document.getElementById('lock-emola').textContent = LICENCA_CONFIG.numeroEmola;
+    document.getElementById('lock-preco').textContent = LICENCA_CONFIG.precoTexto;
+    const msgWa = encodeURIComponent(`Olá! Quero activar a app "A La Ruben". O meu código de aparelho é: ${st.deviceId}`);
+    document.getElementById('lock-wa').href = LICENCA_CONFIG.whatsapp ? `https://wa.me/${LICENCA_CONFIG.whatsapp}?text=${msgWa}` : '#';
+    badge.style.display='none';
+    return false;
+  }
+
+  document.getElementById('lock-screen').classList.remove('show');
+  if(st.emTrial){
+    badge.style.display='block';
+    badge.classList.toggle('urgente', st.diasTrialRestantes<=7);
+    badge.textContent = st.diasTrialRestantes<=0 ? 'Último dia de teste' : `Teste grátis — faltam ${st.diasTrialRestantes} dia(s)`;
+  } else if(st.licencaValida){
+    badge.style.display='block';
+    badge.classList.toggle('urgente', st.diasLicencaRestantes<=14);
+    badge.textContent = `Licença activa — renova em ${st.diasLicencaRestantes} dia(s)`;
+  }
+  return true;
+}
+
+function copiarDeviceId(){
+  const id = document.getElementById('lock-device-id').textContent;
+  if(navigator.clipboard){ navigator.clipboard.writeText(id).then(()=>toast('Código copiado')); }
+  else toast('Código: '+id);
+}
+
+function activarChave(){
+  const st = obterEstadoLicenca();
+  const digitada = normalizarChave(document.getElementById('lock-chave').value);
+  const erro = document.getElementById('lock-erro');
+  const proximoPeriodo = st.periodo + 1;
+
+  const chaveEsperadaProxima = normalizarChave(gerarChave(st.deviceId, proximoPeriodo));
+  const chaveEsperadaAtual = st.periodo>0 ? normalizarChave(gerarChave(st.deviceId, st.periodo)) : null;
+
+  if(digitada === chaveEsperadaProxima){
+    save(LS_PERIODO, proximoPeriodo);
+    save(LS_ATIVADA, Date.now());
+    erro.classList.remove('show');
+    document.getElementById('lock-chave').value='';
+    toast('Activado! Obrigado.');
+    verificarLicenca();
+  } else if(chaveEsperadaAtual && digitada === chaveEsperadaAtual){
+    save(LS_ATIVADA, Date.now());
+    erro.classList.remove('show');
+    document.getElementById('lock-chave').value='';
+    toast('Activado! Obrigado.');
+    verificarLicenca();
+  } else {
+    erro.classList.add('show');
+  }
+}
+
+// =====================================================================
+// INÍCIO
+// =====================================================================
+// =====================================================================
+// INSTALAÇÃO NO ECRÃ PRINCIPAL (PWA) — banner automático, sem menus escondidos
+// =====================================================================
+const LS_INSTALL_DISMISSED = 'install_banner_dismissed';
+let deferredInstallPrompt = null;
+
+function emModoStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+}
+function ehIOS(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function mostrarInstallBanner(tipo){
+  if(load(LS_INSTALL_DISMISSED, false) || emModoStandalone()) return;
+  const banner = document.getElementById('install-banner');
+  const texto = document.getElementById('install-banner-text');
+  const btn = document.getElementById('install-banner-btn');
+  if(tipo==='ios'){
+    texto.textContent = '📲 Para instalar: toca em ⬆️ (partilhar) e depois em "Adicionar ao Ecrã Principal"';
+    btn.style.display='none';
+  } else {
+    texto.textContent = '📲 Instala esta app no telemóvel para acesso rápido';
+    btn.style.display='inline-block';
+  }
+  banner.style.display='flex';
+}
+function instalarApp(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(()=>{ deferredInstallPrompt=null; fecharInstallBanner(); });
+}
+function fecharInstallBanner(){
+  document.getElementById('install-banner').style.display='none';
+  save(LS_INSTALL_DISMISSED, true);
+}
+
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  mostrarInstallBanner('android');
+});
+
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+if(ehIOS() && !emModoStandalone()){
+  mostrarInstallBanner('ios');
+}
+
+carregarNome();
+verificarLicenca();
+renderFiado();
+renderHistorico();
+renderCardapio();
+</script>
+</body>
+</html>

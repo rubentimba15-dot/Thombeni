@@ -1,0 +1,15 @@
+{
+  "name": "A La Ruben",
+  "short_name": "A La Ruben",
+  "description": "Caderneta de fiado e vendas para barracas e bares de rua",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF5E9",
+  "theme_color": "#BE4A28",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

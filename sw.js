@@ -1,7 +1,7 @@
-// Service worker mínimo — guarda a app em cache para: (1) o telemóvel a
-// considerar "instalável" com ícone no ecrã principal, e (2) garantir que
-// abre mesmo sem internet, mesmo depois de o browser limpar o cache normal.
-const CACHE = 'ala-ruben-v1';
+// Service worker — guarda a app em cache só como RESERVA para quando não
+// houver internet. Sempre que houver ligação, vai sempre buscar a versão
+// mais recente primeiro (nunca fica preso numa versão antiga).
+const CACHE = 'ala-ruben-v2';
 const FICHEIROS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', event => {
@@ -20,6 +20,12 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(resposta => resposta || fetch(event.request))
+    fetch(event.request)
+      .then(resposta => {
+        const copia = resposta.clone();
+        caches.open(CACHE).then(cache => cache.put(event.request, copia));
+        return resposta;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

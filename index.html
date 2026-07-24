@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>A La Ruben — Fiado & Vendas</title>
+<title>A La Ruben — Conta & Vendas</title>
 <meta name="apple-mobile-web-app-title" content="A La Ruben">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -196,6 +196,12 @@ main{flex:1;padding:0 1.1rem}
   background:var(--rust);color:#fff;border:none;border-radius:8px;padding:.65rem 1.3rem;
   font-size:.85rem;font-weight:700;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:nowrap;
 }
+.cliente-detalhe-nome{font-family:Georgia,'Noto Serif',serif;font-weight:700;font-size:1.2rem}
+.cliente-detalhe-tel{font-size:.78rem;color:var(--ink3);margin-bottom:.9rem}
+.novo-cliente-form{background:var(--card);border-radius:10px;padding:.8rem .9rem;box-shadow:var(--shadow);margin:.7rem 0 1rem}
+.novo-cliente-form input{margin-bottom:.5rem}
+.mm-row .mm-chevron{color:var(--ink3);font-size:1rem}
+
 .cancel-link{
   display:block;text-align:center;font-size:.72rem;color:var(--ink3);margin-top:.6rem;
   text-decoration:underline;cursor:pointer;
@@ -276,7 +282,7 @@ main{flex:1;padding:0 1.1rem}
   <div class="topbar">
     <div class="app-brand">A La Ruben</div>
     <div class="brand" onclick="editarNome()">
-      <div class="brand-name" id="brand-name">Toca para pôr o nome da tua barraca</div>
+      <div class="brand-name" id="brand-name">Clica aqui para colocar o nome da tua Barraca ou restaurante</div>
       <div class="brand-tag">caderneta de fiado &amp; vendas</div>
     </div>
   </div>
@@ -342,9 +348,9 @@ main{flex:1;padding:0 1.1rem}
   <button class="fab" id="fab-novo" onclick="abrirNovaConta()">+</button>
 
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-view="fiado" onclick="mudarView('fiado')"><span class="nav-ico">📒</span><span>Fiado</span></button>
+    <button class="nav-btn active" data-view="fiado" onclick="mudarView('fiado')"><span class="nav-ico">📒</span><span>Conta</span></button>
     <button class="nav-btn" data-view="historico" onclick="mudarView('historico')"><span class="nav-ico">✅</span><span>Histórico</span></button>
-    <button class="nav-btn" data-view="cardapio" onclick="mudarView('cardapio')"><span class="nav-ico">📋</span><span>Cardápio</span></button>
+    <button class="nav-btn" data-view="cardapio" onclick="mudarView('cardapio')"><span class="nav-ico">📋</span><span>Menu</span></button>
   </nav>
 </div>
 
@@ -353,6 +359,7 @@ main{flex:1;padding:0 1.1rem}
   <div class="modal-sheet">
     <div class="modal-hd">
       <input id="conta-cliente" type="text" placeholder="Nome do cliente">
+      <button class="tc-share" id="btn-abrir-clientes" onclick="abrirClientes()" title="Clientes registados">👤</button>
       <button onclick="fecharModalConta()">✕</button>
     </div>
     <div class="modal-body">
@@ -371,6 +378,41 @@ main{flex:1;padding:0 1.1rem}
     <div class="modal-ft">
       <span class="modal-total" id="conta-total">MT 0,00</span>
       <button class="btn-primary" onclick="guardarConta()">Guardar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: clientes -->
+<div class="modal-overlay" id="modal-clientes">
+  <div class="modal-sheet">
+    <div class="modal-hd">
+      <span style="font-family:'Kalam',cursive,Georgia,serif;font-weight:700;font-size:1.15rem">👤 Clientes</span>
+      <button onclick="fecharClientes()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div id="clientes-vista-lista">
+        <input id="clientes-busca" type="text" placeholder="Procurar por nome ou telefone..." oninput="renderClientesLista()">
+        <div class="novo-cliente-form">
+          <input id="novo-cliente-nome" type="text" placeholder="Nome do cliente">
+          <input id="novo-cliente-tel" type="text" placeholder="Telefone (opcional)" inputmode="tel">
+          <button class="btn-primary" style="width:100%" onclick="guardarNovoCliente()">+ Adicionar cliente</button>
+        </div>
+        <div id="clientes-lista" class="menu-manage-list"></div>
+        <div class="empty" id="clientes-empty" style="display:none">Ainda não tens clientes registados. Adiciona o primeiro acima.</div>
+      </div>
+
+      <div id="clientes-vista-detalhe" style="display:none">
+        <div class="cliente-detalhe-nome" id="detalhe-nome"></div>
+        <div class="cliente-detalhe-tel" id="detalhe-tel"></div>
+        <div class="extra-card" id="detalhe-resumo"></div>
+        <div class="section-label">Histórico deste cliente</div>
+        <div id="detalhe-historico" class="tab-list"></div>
+        <button class="btn-primary" style="width:100%;margin-top:1rem" onclick="usarClienteNaConta()">Usar este cliente na conta</button>
+        <div class="cancel-link" onclick="voltarListaClientes()">← Voltar à lista</div>
+        <div class="cancel-link" onclick="apagarClienteActual()">Apagar cliente (não apaga o histórico)</div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -464,6 +506,10 @@ if(!MENU){
   ];
   save(LS_MENU, MENU);
 }
+const LS_CLIENTES = 'fiado_clientes';
+let CLIENTES = load(LS_CLIENTES, []);
+let clienteDetalheActualId = null;
+
 let ABERTAS = load(LS_ABERTAS, []);
 let HIST = load(LS_HIST, []);
 
@@ -539,7 +585,7 @@ function carregarNome(){
 }
 function editarNome(){
   const actual = document.getElementById('brand-name').textContent;
-  const ehPlaceholder = actual === 'Toca para pôr o nome da tua barraca';
+  const ehPlaceholder = actual === 'Clica aqui para colocar o nome da tua Barraca ou restaurante';
   const novo = prompt('Nome da tua barraca/restaurante:', ehPlaceholder ? '' : actual);
   if(novo && novo.trim()){
     document.getElementById('brand-name').textContent = novo.trim();
@@ -586,7 +632,7 @@ function renderFiado(){
 
 function nomeNegocioAtual(){
   const t = document.getElementById('brand-name').textContent;
-  return t==='Toca para pôr o nome da tua barraca' ? 'Barraca' : t;
+  return t==='Clica aqui para colocar o nome da tua Barraca ou restaurante' ? 'Barraca' : t;
 }
 function montarTextoConta(cliente, lancamentos){
   const linhas = lancamentos.slice().sort((a,b)=>a.ts-b.ts)
@@ -600,6 +646,16 @@ function enviarConta(id){
   const texto = montarTextoConta(conta.cliente, conta.lancamentos);
   if(navigator.share){
     navigator.share({ title: nomeNegocioAtual()+' — Conta', text: texto }).catch(()=>{});
+  } else {
+    window.open('https://wa.me/?text='+encodeURIComponent(texto), '_blank');
+  }
+}
+function enviarContaHistorico(id){
+  const h = HIST.find(x=>x.id===id);
+  if(!h) return;
+  const texto = montarTextoConta(h.cliente, h.lancamentos) + '\n\n✅ Pago em '+formatarData(h.pagoEm);
+  if(navigator.share){
+    navigator.share({ title: nomeNegocioAtual()+' — Recibo', text: texto }).catch(()=>{});
   } else {
     window.open('https://wa.me/?text='+encodeURIComponent(texto), '_blank');
   }
@@ -665,7 +721,10 @@ function renderHistorico(){
     div.innerHTML = `
       <div class="tab-card-hd">
         <div><div class="tc-nome">${escapeHtml(h.cliente)}</div><div class="tc-quando">pago ${formatarData(h.pagoEm)}</div></div>
-        <div class="tc-total">${fmt(h.total)}</div>
+        <div class="tc-hd-right">
+          <div class="tc-total">${fmt(h.total)}</div>
+          <button class="tc-share" onclick="enviarContaHistorico('${h.id}')" title="Enviar recibo ao cliente">📤</button>
+        </div>
       </div>
       <div class="tc-itens">${linhaTempo}</div>
     `;
@@ -700,6 +759,7 @@ function abrirNovaConta(){
   document.getElementById('conta-cliente').disabled=false;
   document.getElementById('cancelar-conta-link').style.display='none';
   document.getElementById('novo-pedido-hint').style.display='none';
+  document.getElementById('btn-abrir-clientes').style.display='flex';
   renderPickers();
   document.getElementById('modal-conta').classList.add('open');
   setTimeout(()=>document.getElementById('conta-cliente').focus(),200);
@@ -712,6 +772,7 @@ function abrirContaExistente(id){
   document.getElementById('conta-cliente').disabled=true;
   document.getElementById('cancelar-conta-link').style.display='block';
   document.getElementById('novo-pedido-hint').style.display='block';
+  document.getElementById('btn-abrir-clientes').style.display='none';
   renderPickers();
   document.getElementById('modal-conta').classList.add('open');
 }
@@ -812,6 +873,100 @@ function pagarConta(id){
 // =====================================================================
 // MODAL: NOVO ITEM DO CARDÁPIO
 // =====================================================================
+// =====================================================================
+// CLIENTES (base de dados de clientes frequentes)
+// =====================================================================
+function abrirClientes(){
+  document.getElementById('clientes-vista-lista').style.display='block';
+  document.getElementById('clientes-vista-detalhe').style.display='none';
+  document.getElementById('clientes-busca').value='';
+  document.getElementById('novo-cliente-nome').value='';
+  document.getElementById('novo-cliente-tel').value='';
+  renderClientesLista();
+  document.getElementById('modal-clientes').classList.add('open');
+}
+function fecharClientes(){
+  document.getElementById('modal-clientes').classList.remove('open');
+}
+function renderClientesLista(){
+  const busca = document.getElementById('clientes-busca').value.trim().toLowerCase();
+  const lista = document.getElementById('clientes-lista');
+  const vazio = document.getElementById('clientes-empty');
+  lista.innerHTML='';
+  const filtrados = CLIENTES.filter(c=>!busca || c.nome.toLowerCase().includes(busca) || (c.telefone||'').toLowerCase().includes(busca));
+  vazio.style.display = (CLIENTES.length===0) ? 'block' : 'none';
+  filtrados.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(c=>{
+    const row = document.createElement('div');
+    row.className='mm-row';
+    row.style.cursor='pointer';
+    row.onclick=()=>verClienteDetalhe(c.id);
+    row.innerHTML = `<div class="mm-info"><div class="mm-nome">${escapeHtml(c.nome)}</div><div class="mm-preco">${c.telefone?escapeHtml(c.telefone):'sem telefone'}</div></div><span class="mm-chevron">›</span>`;
+    lista.appendChild(row);
+  });
+}
+function guardarNovoCliente(){
+  const nome = document.getElementById('novo-cliente-nome').value.trim();
+  const telefone = document.getElementById('novo-cliente-tel').value.trim();
+  if(!nome){ toast('Escreva o nome do cliente'); return; }
+  CLIENTES.push({ id:uid(), nome, telefone });
+  save(LS_CLIENTES, CLIENTES);
+  document.getElementById('novo-cliente-nome').value='';
+  document.getElementById('novo-cliente-tel').value='';
+  renderClientesLista();
+  toast('Cliente adicionado');
+}
+function verClienteDetalhe(id){
+  const c = CLIENTES.find(x=>x.id===id);
+  if(!c) return;
+  clienteDetalheActualId = id;
+  document.getElementById('clientes-vista-lista').style.display='none';
+  document.getElementById('clientes-vista-detalhe').style.display='block';
+  document.getElementById('detalhe-nome').textContent = c.nome;
+  document.getElementById('detalhe-tel').textContent = c.telefone || 'Sem telefone registado';
+
+  const nomeNorm = c.nome.trim().toLowerCase();
+  const historico = HIST.filter(h=>h.cliente.trim().toLowerCase()===nomeNorm);
+  const totalGasto = historico.reduce((s,h)=>s+h.total,0);
+  const contaAberta = ABERTAS.find(a=>a.cliente.trim().toLowerCase()===nomeNorm);
+
+  document.getElementById('detalhe-resumo').innerHTML = `
+    <div class="ec-row"><span>Total gasto (histórico)</span><span>${fmt(totalGasto)}</span></div>
+    <div class="ec-row"><span>Nº de compras</span><span>${historico.length}</span></div>
+    <div class="ec-row"><span>Conta em aberto agora</span><span>${contaAberta?fmt(totalLancamentos(contaAberta.lancamentos)):'Nenhuma'}</span></div>
+  `;
+
+  const listaHist = document.getElementById('detalhe-historico');
+  listaHist.innerHTML='';
+  if(historico.length===0){
+    listaHist.innerHTML = '<div class="empty">Ainda sem compras registadas para este cliente.</div>';
+  } else {
+    historico.slice().sort((a,b)=>b.pagoEm-a.pagoEm).forEach(h=>{
+      const resumo = agruparLancamentos(h.lancamentos).map(i=>`<b>${i.qtd}×</b> ${escapeHtml(i.nome)}`).join(' · ');
+      const div = document.createElement('div');
+      div.className='tab-card paga';
+      div.innerHTML = `<div class="tab-card-hd"><div class="tc-quando">pago ${formatarData(h.pagoEm)}</div><div class="tc-total">${fmt(h.total)}</div></div><div class="tc-itens">${resumo}</div>`;
+      listaHist.appendChild(div);
+    });
+  }
+}
+function voltarListaClientes(){
+  document.getElementById('clientes-vista-lista').style.display='block';
+  document.getElementById('clientes-vista-detalhe').style.display='none';
+  renderClientesLista();
+}
+function usarClienteNaConta(){
+  const c = CLIENTES.find(x=>x.id===clienteDetalheActualId);
+  if(!c) return;
+  document.getElementById('conta-cliente').value = c.nome;
+  fecharClientes();
+}
+function apagarClienteActual(){
+  if(!confirm('Remover este cliente da lista? O histórico de compras dele não é apagado.')) return;
+  CLIENTES = CLIENTES.filter(c=>c.id!==clienteDetalheActualId);
+  save(LS_CLIENTES, CLIENTES);
+  voltarListaClientes();
+}
+
 function abrirModalItem(){
   document.getElementById('item-nome').value='';
   document.getElementById('item-preco').value='';
